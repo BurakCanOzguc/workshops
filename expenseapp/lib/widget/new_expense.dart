@@ -53,6 +53,13 @@ class _NewExpenseState extends State<NewExpense> {
             icon: Icon(Icons.calendar_month),
           ),
           Text(DateFormat.yMd().format(selectedDate)),
+          Text("Tarih Seçiniz"),
+
+          /*ElevatedButton(onPressed:({
+            Navigator.pop(context);
+          
+          }), burada en son seçtiği yerden kalmasını sağlyor tkavimin. yani tekrar tıklandığında en son seçtğiği sayfada kalıyor.*/
+
           ElevatedButton(
               onPressed: () {
                 print(
