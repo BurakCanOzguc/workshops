@@ -1,52 +1,50 @@
+import 'dart:math';
+
 import 'package:expenseapp/models/expense.dart';
+import 'package:expenseapp/widget/chart.dart';
 import 'package:expenseapp/widget/expense_item.dart';
 import 'package:flutter/material.dart';
 
 class ExpensesPage extends StatefulWidget {
-  const ExpensesPage({Key? key}) : super(key: key);
+  const ExpensesPage(this.expenses, this.onRemove, {Key? key})
+      : super(key: key);
+  final List<Expense> expenses;
+  final void Function(Expense expense) onRemove;
 
   @override
   _ExpensesPageState createState() => _ExpensesPageState();
 }
 
 class _ExpensesPageState extends State<ExpensesPage> {
-  List<Expense> expenses = [
-    Expense(
-        name: "Yemek",
-        price: 500.529,
-        date: DateTime.now(),
-        category: Category.food),
-    Expense(
-        name: "Udemy Kursu",
-        price: 200,
-        date: DateTime.now(),
-        category: Category.work),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const SizedBox(
+        SizedBox(
           height: 150,
-          child: Text(
-            "Grafik Bölümü",
-            style: TextStyle(
-                color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+          child: Chart(allExpenses: widget.expenses),
         ),
         Expanded(
           child: ListView.builder(
-              itemCount: expenses.length,
+              itemCount: widget.expenses.length,
               itemBuilder: (context, index) {
-                return ExpenseItem(expenses[index]);
+                return Dismissible(
+                  key: ValueKey(widget.expenses[index]),
+                  child: ExpenseItem(widget.expenses[index]),
+                  onDismissed: (direction) {
+                    // if (direction == DismissDirection.startToEnd) {
+                    //   // eğer soldan sağa kaydırılmışsa..
+                    // }
+                    //print(direction);
+                    widget.onRemove(widget.expenses[index]);
+                  },
+                );
               }),
-        ),
-        const SizedBox(
-          height: 150,
-          child: Text("Burası bottom bar."),
         )
       ]),
     );
   }
 }
+
+// listeden veri silme ve alt başlıkları
+// theming ve alt başlıkları

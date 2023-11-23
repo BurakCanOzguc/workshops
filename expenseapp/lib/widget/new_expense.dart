@@ -1,9 +1,10 @@
+import 'package:expenseapp/models/expense.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
-
+  const NewExpense(this.onAdd, {Key? key}) : super(key: key);
+  final void Function(Expense expense) onAdd;
   @override
   _NewExpenseState createState() => _NewExpenseState();
 }
@@ -11,22 +12,36 @@ class NewExpense extends StatefulWidget {
 class _NewExpenseState extends State<NewExpense> {
   var _expenseNameController = TextEditingController();
   var _expensePriceController = TextEditingController();
-  var selectedDate = DateTime.now();
-  var expenseDateController = TextEditingController();
+  DateTime? _selectedDate;
+  Category _selectedCategory = Category.work;
 
-  Future<void> selectDate() async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now(),
-    );
+  void _openDatePicker() async {
+    DateTime today = DateTime.now(); // 16.11.2023
+    // 2022, 11, 16
+    DateTime oneYearAgo = DateTime(today.year - 1, today.month, today.day);
+    // showDatePicker(
+    //         context: context,
+    //         initialDate: today,
+    //         firstDate: oneYearAgo,
+    //         lastDate: today)
+    // .then((value) {
+    //   async işlemden cevap ne zaman gelirse bu bloğu çalıştır..
+    //   print(value);
+    // });
+    // async function => await etmek
+    // nullable
 
-    if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
+    DateTime? selectedDate = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate == null ? today : _selectedDate!,
+        firstDate: oneYearAgo,
+        lastDate: today);
+    setState(() {
+      _selectedDate = selectedDate;
+    });
+    print("Merhaba");
+    // sync => bir satır çalışmasını bitirmeden alt satıra geçemez.
+    // async => async olan satır sadece tetiklenir kod aşağıya doğru çalışmaya devam eder
   }
 
   @override
@@ -41,31 +56,75 @@ class _NewExpenseState extends State<NewExpense> {
             maxLength: 50,
             decoration: InputDecoration(labelText: "Harcama Adı"),
           ),
-          TextField(
-            controller: _expensePriceController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: "Harcama Miktarı"),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _expensePriceController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      labelText: "Harcama Miktarı", prefixText: "₺"),
+                ),
+              ),
+              IconButton(
+                  onPressed: () => _openDatePicker(),
+                  icon: const Icon(Icons.calendar_month)),
+              // ternary operator
+              Text(_selectedDate == null
+                  ? "Tarih Seçiniz"
+                  : DateFormat.yMd().format(_selectedDate!)),
+            ],
+            // String?  a
+            // String => a!
           ),
-          IconButton(
-            onPressed: () {
-              selectDate();
-            },
-            icon: Icon(Icons.calendar_month),
+          const SizedBox(
+            height: 30,
           ),
-          Text(DateFormat.yMd().format(selectedDate)),
-          Text("Tarih Seçiniz"),
+          Row(
+            children: [
+              DropdownButton(
+                  value: _selectedCategory,
+                  items: Category.values.map((category) {
+                    return DropdownMenuItem(
+                        value: category, child: Text(category.name));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value != null) _selectedCategory = value;
+                    });
+                  })
+            ],
+          ),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Kapat")),
+              const SizedBox(
+                width: 12,
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    double? price =
+                        double.tryParse(_expensePriceController.text);
 
-          /*ElevatedButton(onPressed:({
-            Navigator.pop(context);
-          
-          }), burada en son seçtiği yerden kalmasını sağlyor tkavimin. yani tekrar tıklandığında en son seçtğiği sayfada kalıyor.*/
+                    // validation
 
-          ElevatedButton(
-              onPressed: () {
-                print(
-                    "Kaydedilen değer: ${_expenseNameController.text} ${_expensePriceController.text}");
-              },
-              child: Text("Ekle"))
+                    Expense expense = Expense(
+                        name: _expenseNameController.text,
+                        price: price!,
+                        date: _selectedDate!,
+                        category: _selectedCategory);
+                    widget.onAdd(expense);
+                    Navigator.pop(context);
+                  },
+                  child: Text("Ekle")),
+            ],
+          ),
         ]),
       ),
     );
