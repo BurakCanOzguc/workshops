@@ -22,6 +22,29 @@ class Categories extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Bir kategori seçin.."),
       ),
+      drawer: Drawer(
+        backgroundColor: Color.fromARGB(255, 12, 60, 13),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: const [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 12, 12, 12),
+              ),
+              child: Text("Menü"),
+            ),
+            ListTile(
+              title: const Text("Home"),
+            ),
+            ListTile(
+              title: const Text("Home2"),
+            ),
+            ListTile(
+              title: const Text("Home3"),
+            ),
+          ],
+        ),
+      ),
       body: GridView(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
