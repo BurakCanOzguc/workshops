@@ -54,10 +54,10 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
             Text(
               requestBlog?.author ?? '',
               style: const TextStyle(
-                fontSize: 16,
-                color: Color.fromARGB(255, 255, 80, 27),
-                fontWeight: FontWeight.bold,
-              ),
+                  fontSize: 16,
+                  color: Color.fromARGB(255, 255, 80, 27),
+                  fontWeight: FontWeight.bold,
+                  decoration: TextDecoration.underline),
             ),
             const SizedBox(height: 20),
             // Diğer blog içeriği alanları...
