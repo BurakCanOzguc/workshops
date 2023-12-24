@@ -19,8 +19,7 @@ class BlogItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          navigateToBlogDetail(context,
-              blogs.id.toString()); // Pass the blog ID to the next screen
+          navigateToBlogDetail(context, blogs.id.toString());
         },
         child: Card(
           margin: EdgeInsets.all(25),

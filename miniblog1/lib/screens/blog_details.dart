@@ -18,7 +18,6 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // http paketi ile istek
     fetchBlogs();
   }
 
