@@ -1,40 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:miniblog1/models/blog.dart';
-import 'package:miniblog1/screens/blog_details.dart';
 
 class BlogItem extends StatelessWidget {
-  const BlogItem({super.key, required this.blogs});
-  final Blog blogs;
-
-  navigateToBlogDetail(BuildContext context, String blogId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlogDetailScreen(blog: blogs),
-      ),
-    );
-  }
+  const BlogItem({super.key, required this.blog});
+  final Blog blog;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: () {
-          navigateToBlogDetail(context, blogs.id.toString());
-        },
-        child: Card(
-          margin: EdgeInsets.all(25),
-          child: Column(children: [
-            AspectRatio(
-                aspectRatio: 4 / 2,
-                child: Container(
-                    width: double.infinity,
-                    color: Color.fromARGB(179, 122, 122, 122),
-                    child: Image.network(blogs.thumbnail!))),
-            ListTile(
-              title: Text(blogs.title!),
-              subtitle: Text(blogs.author!),
-            )
-          ]),
-        ));
+    return Card(
+      margin: EdgeInsets.all(20),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(children: [
+          AspectRatio(
+              aspectRatio: 4 / 2,
+              child: Container(
+                  color: Colors.grey[300],
+                  width: double.infinity,
+                  child: Image.network(blog.thumbnail!))),
+          ListTile(
+            title: Text(blog.title!),
+            subtitle: Text(blog.author!),
+          )
+        ]),
+      ),
+    );
   }
 }

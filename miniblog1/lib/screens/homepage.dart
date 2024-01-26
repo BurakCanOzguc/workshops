@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import "package:http/http.dart" as http;
-import 'package:miniblog1/models/blog.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:miniblog1/blocs/article_bloc/article_bloc.dart';
+import 'package:miniblog1/blocs/article_bloc/article_event.dart';
+import 'package:miniblog1/blocs/article_bloc/article_state.dart';
 import 'package:miniblog1/screens/add_blog.dart';
 import 'package:miniblog1/widgets/blog_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -14,21 +17,49 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  List<Blog> blogList = [];
+  bool darkMode = true;
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    // http paketi ile istek
-    fetchBlogs();
+    getDarkMode();
+    setJson();
+    getJson();
   }
 
-  fetchBlogs() async {
-    Uri url = Uri.parse("https://tobetoapi.halitkalayci.com/api/Articles");
-    final response = await http.get(url);
-    final List jsonData = json.decode(response.body);
+  void setJson() async {
+    Map<String, dynamic> json = {
+      'name': 'Halit Enes',
+      'surname': "Kalaycı",
+      'age': 25
+    };
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final jsonAsString = jsonEncode(json);
+    sharedPrefs.setString("user", jsonAsString);
+  }
+
+  void getJson() async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final jsonAsString = sharedPrefs.getString("user");
+    Map<String, dynamic> json = jsonDecode(jsonAsString!);
+  }
+
+  void getDarkMode() async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final isDarkMode = sharedPrefs.getBool("darkMode");
+    if (isDarkMode != null) {
+      setState(() {
+        darkMode = isDarkMode;
+      });
+    }
+  }
+
+  void onDarkModeChange(bool value) async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    sharedPrefs.setBool("darkMode", value);
     setState(() {
-      blogList = jsonData.map((json) => Blog.fromJson(json)).toList();
+      darkMode = value;
     });
   }
 
@@ -44,24 +75,56 @@ class _HomepageState extends State<Homepage> {
                       .push(MaterialPageRoute(builder: (builder) => AddBlog()));
 
                   if (result == true) {
-                    fetchBlogs();
+                    //fetchBlogs();
                   }
                 },
                 icon: const Icon(Icons.add))
           ],
         ),
-        body: blogList.isEmpty
-            ? const Center(
+        body: BlocBuilder<ArticleBloc, ArticleState>(
+          builder: (context, state) {
+            if (state is ArticlesInitial) {
+              context.read<ArticleBloc>().add(FetchArticles());
+
+              return const Center(
+                child: Text("İstek atılıyor.."),
+              );
+            }
+
+            if (state is ArticlesLoading) {
+              return const Center(
                 child: CircularProgressIndicator(),
-              )
-            : RefreshIndicator(
-                onRefresh: () async {
-                  fetchBlogs();
-                },
-                child: ListView.builder(
-                  itemBuilder: (ctx, index) => BlogItem(blogs: blogList[index]),
-                  itemCount: blogList.length,
-                ),
-              ));
+              );
+            }
+
+            if (state is ArticlesError) {
+              return const Center(
+                child: Text("İstek hatalı.."),
+              );
+            }
+
+            if (state is ArticlesLoaded) {
+              return Column(
+                children: [
+                  Switch(
+                      value: darkMode,
+                      onChanged: (value) {
+                        onDarkModeChange(value);
+                      }),
+                  Expanded(
+                    child: ListView.builder(
+                        itemCount: state.blogs.length,
+                        itemBuilder: (context, index) =>
+                            BlogItem(blog: state.blogs[index])),
+                  ),
+                ],
+              );
+            }
+
+            return const Center(
+              child: Text("Bilinmedik durum"),
+            );
+          },
+        ));
   }
 }
